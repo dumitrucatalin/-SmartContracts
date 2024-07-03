@@ -1,0 +1,26 @@
+{
+  "name": "smartcontracts",
+  "version": "1.0.0",
+  "description": "A repo with smart contracts samples",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "npx hardhat compile",
+    "prettify": "yarn run prettier --config .prettierrc --write .",
+    "lint": "yarn run solhint --config .solhint.json ./src/**/*.sol ./test/**/*.sol ./script/**/*.sol",
+    "deploy:local": "npx hardhat run --network local scripts/deploy.js"
+  },
+  "keywords": [],
+  "author": "Catalin Dumitru <dumitru.catalin96@yahoo.com>",
+  "license": "ISC",
+  "repository": "https://github.com/dumitrucatalin/SmartContracts.git",
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "@nomiclabs/hardhat-waffle": "^2.0.6",
+    "@types/sinon-chai": "^3.2.3",
+    "chai": "^5.1.1",
+    "ethereum-waffle": "^4.0.10",
+    "ethers": "^5.7.2",
+    "hardhat": "^2.22.6"
+  }
+}
