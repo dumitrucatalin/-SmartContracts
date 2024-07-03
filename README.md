@@ -1,2 +1,2 @@
-# -SmartContracts
-A repo with some interesting smart contracts
+# SmartContracts
+A repo with smart contracts samples
