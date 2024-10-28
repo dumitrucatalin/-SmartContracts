@@ -1,6 +1,5 @@
-//SPDX-License-Identifier: MIT
-
-pragma solidity 0.8.15;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.26;
 
 contract SmartContractWallet {
     address payable owner;
@@ -13,12 +12,25 @@ contract SmartContractWallet {
     uint256 guardiansResetCount;
     uint256 public constant confirmationsFromGuardiansForReset = 3;
 
+    // Events to log when actions occur
+    event AllowanceSet(address indexed allowedBy, address indexed allowedTo, uint256 amount);
+    event TransferMade(address indexed from, address indexed to, uint256 amount, bytes payload);
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "You are not the owner, aborting!");
+        _;
+    }
+
+    modifier onlyGuardian() {
+        require(guardian[msg.sender], "You are no guardian, aborting");
+        _;
+    }
+
     constructor() {
         owner = payable(msg.sender);
     }
 
-    function proposeNewOwner(address payable newOwner) public {
-        require(guardian[msg.sender], "You are no guardian, aborting");
+    function proposeNewOwner(address payable newOwner) public onlyGuardian {
         if (nextOwner != newOwner) {
             nextOwner = newOwner;
             guardiansResetCount = 0;
@@ -32,14 +44,25 @@ contract SmartContractWallet {
         }
     }
 
-    function setAllowance(address _from, uint256 _amount) public {
-        require(msg.sender == owner, "You are not the owner, aborting!");
-        allowance[_from] = _amount;
-        isAllowedToSend[_from] = true;
+    function addGuardian(address _guardian) public onlyOwner {
+        require(_guardian != address(0), "Invalid guardian address");
+        require(_guardian != owner, "The owner shouldn't be a guardian");
+        require(!guardian[_guardian], "Address is already a guardian");
+        guardian[_guardian] = true;
     }
 
-    function denySending(address _from) public {
-        require(msg.sender == owner, "You are not the owner, aborting!");
+    function removeGuardian(address _guardian) public onlyOwner {
+        require(guardian[_guardian], "Address is not a guardian");
+        guardian[_guardian] = false;
+    }
+
+    function setAllowance(address _from, uint256 _amount) public onlyOwner {
+        allowance[_from] = _amount;
+        isAllowedToSend[_from] = true;
+        emit AllowanceSet(msg.sender, _from, _amount); // Emit the AllowanceSet event
+    }
+
+    function denySending(address _from) public onlyOwner {
         isAllowedToSend[_from] = false;
     }
 
@@ -68,6 +91,10 @@ contract SmartContractWallet {
             payload
         );
         require(success, "Transaction failed, aborting");
+
+        // Emit the TransferMade event
+        emit TransferMade(msg.sender, _to, _amount, payload);
+
         return returnData;
     }
 
